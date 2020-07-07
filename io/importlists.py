@@ -23,7 +23,7 @@ def importsystems(root):
     
     return systems
 
-def importlines(root,zrange=[-9999,9999]):
+def importlines(root,zrange=[-9999,9999],waverange=[0,np.inf],linename=None):
 
     """Returns the line information found in
 	datapath(root) as an astropy table object."""	
@@ -33,9 +33,15 @@ def importlines(root,zrange=[-9999,9999]):
            'FLAG_FIT' ,'LCOD','FLAG_ISM','FLAG_AGN']
     linesfile='hlsp_igm_hst_cos_'+root+'_g130m-g160m_v3_linelist.txt'
     lines=ascii.read(datapath(root) / linesfile,names=names)
-    lines.add_row([0,'',np.mean(zrange),0,0,0,0,0,0,0,0,0,0,0,0,0]) #hack, fix please
-    lines.add_index('z_ABS')
-    lines=lines.loc['z_ABS',zrange[0]:zrange[1]]
+    if linename is not None:
+        lines=lines[np.where(np.array(lines['LINE_ID']) == linename)]
+    lines=lines[np.where(lines['z_ABS']>zrange[0])]
+    lines=lines[np.where(lines['z_ABS']<zrange[1])]
+    lines=lines[np.where(lines['WAVELENGTH']>waverange[0])]
+    lines=lines[np.where(lines['WAVELENGTH']<waverange[1])]
+    #lines.add_row([0,'',np.mean(zrange),0,0,0,0,0,0,0,0,0,0,0,0,0]) #hack, fix please
+    #lines.add_index('z_ABS')
+    #lines=lines.loc['z_ABS',zrange[0]:zrange[1]]
 
     return lines
 
